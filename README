@@ -1,5 +1,12 @@
-Go package for parsing and evaluating expressions sql expressions.
+Go package for parsing and evaluating SQL expressions.
 
 Documentation:
 
     http://godoc.org/github.com/drone/expr
+
+Example Usage:
+
+    data := map[string]string{
+      "state": "CA"
+    }
+    match, err := expr.Eval("state IN ('CA', 'OR', 'WA')", data)
