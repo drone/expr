@@ -207,6 +207,29 @@ func TestParse(t *testing.T) {
 				},
 			},
 		},
+
+		{
+			query: "cpu > 2 AND (os == 'linux' OR os == 'unix')",
+			root: &AndExpr{
+				Left: &ComparisonExpr{
+					Operator: OperatorGt,
+					Left:     &Field{Name: []byte("cpu")},
+					Right:    &BasicLit{Value: []byte("2")},
+				},
+				Right: &OrExpr{
+					Left: &ComparisonExpr{
+						Operator: OperatorEq,
+						Left:     &Field{Name: []byte("os")},
+						Right:    &BasicLit{Value: []byte("linux")},
+					},
+					Right: &ComparisonExpr{
+						Operator: OperatorEq,
+						Left:     &Field{Name: []byte("os")},
+						Right:    &BasicLit{Value: []byte("unix")},
+					},
+				},
+			},
+		},
 	}
 
 	for _, want := range tests {

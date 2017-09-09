@@ -9,8 +9,8 @@ import (
 type Tree struct {
 	Root BoolExpr
 
-	// Parsing only; cleared after parse.
-	lex *lexer
+	lex   *lexer
+	depth int
 }
 
 // Parse parses the SQL statement and returns a Tree.
@@ -44,7 +44,11 @@ func (t *Tree) errorf(format string, args ...interface{}) {
 }
 
 func (t *Tree) parseExpr() BoolExpr {
-	if t.lex.peek() == tokenNot {
+	switch t.lex.peek() {
+	case tokenLparen:
+		t.lex.scan()
+		return t.parseGroup()
+	case tokenNot:
 		t.lex.scan()
 		return t.parseNot()
 	}
@@ -57,8 +61,32 @@ func (t *Tree) parseExpr() BoolExpr {
 		return t.parseOr(node)
 	case tokenAnd:
 		return t.parseAnd(node)
+	case tokenRparen:
+		if t.depth == 0 {
+			t.errorf("unexpected token")
+			return nil
+		}
+		return node
 	default:
 		return node
+	}
+}
+
+func (t *Tree) parseGroup() BoolExpr {
+	t.depth++
+	node := t.parseExpr()
+	t.depth--
+
+	switch t.lex.scan() {
+	case tokenOr:
+		return t.parseOr(node)
+	case tokenAnd:
+		return t.parseAnd(node)
+	case tokenEOF:
+		return node
+	default:
+		t.errorf("unexpected token")
+		return nil
 	}
 }
 
