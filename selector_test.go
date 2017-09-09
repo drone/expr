@@ -192,12 +192,6 @@ func TestEval(t *testing.T) {
 	}
 }
 
-type mapRow map[string]string
-
-func (m mapRow) Field(name []byte) []byte {
-	return []byte(m[string(name)])
-}
-
 var result bool
 
 // this benchmark measures the performance of what we expect will be
