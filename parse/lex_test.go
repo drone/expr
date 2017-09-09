@@ -37,6 +37,8 @@ func TestLexer_scan(t *testing.T) {
 		{"REGEXP", "REGEXP", tokenRegexp},
 		{"TRUE", "TRUE", tokenTrue},
 		{"FALSE", "FALSE", tokenFalse},
+		{"between", "between", tokenBetween},
+		{"BETWEEN ", "BETWEEN", tokenBetween},
 		// scanNumber
 		{"1", "1", tokenInteger},
 		{"1234 ", "1234", tokenInteger},

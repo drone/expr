@@ -89,30 +89,70 @@ func (t *Tree) parseComparison(left ValExpr) BoolExpr {
 		negate = true
 	}
 
-	node := new(ComparisonExpr)
-	node.Operator = t.parseOperator()
-	node.Left = left
+	op := t.parseOperator()
 
 	if negate {
-		switch node.Operator {
+		switch op {
 		case OperatorIn:
-			node.Operator = OperatorNotIn
+			op = OperatorNotIn
 		case OperatorGlob:
-			node.Operator = OperatorNotGlob
+			op = OperatorNotGlob
 		case OperatorRe:
-			node.Operator = OperatorNotRe
+			op = OperatorNotRe
+		case OperatorBetween:
+			op = OperatorNotBetween
 		}
 	}
+
+	switch op {
+	case OperatorBetween:
+		return t.parseBetween(left)
+	case OperatorNotBetween:
+		return t.parseNotBetween(left)
+	}
+
+	node := new(ComparisonExpr)
+	node.Left = left
+	node.Operator = op
 
 	switch node.Operator {
 	case OperatorIn, OperatorNotIn:
 		node.Right = t.parseList()
 	case OperatorRe, OperatorNotRe:
-		// TODO placeholder for custom Regexp Node
+		// TODO we should use a custom regexp node here that parses and
+		// compiles the regexp, insteam of recompiling on every evaluation.
 		node.Right = t.parseVal()
 	default:
 		node.Right = t.parseVal()
 	}
+	return node
+}
+
+func (t *Tree) parseNotBetween(value ValExpr) BoolExpr {
+	node := new(NotExpr)
+	node.Expr = t.parseBetween(value)
+	return node
+}
+
+func (t *Tree) parseBetween(value ValExpr) BoolExpr {
+	left := new(ComparisonExpr)
+	left.Left = value
+	left.Operator = OperatorGte
+	left.Right = t.parseVal()
+
+	if t.lex.scan() != tokenAnd {
+		t.errorf("unexpected token, expecting AND")
+		return nil
+	}
+
+	right := new(ComparisonExpr)
+	right.Left = value
+	right.Operator = OperatorLte
+	right.Right = t.parseVal()
+
+	node := new(AndExpr)
+	node.Left = left
+	node.Right = right
 	return node
 }
 
@@ -136,6 +176,8 @@ func (t *Tree) parseOperator() (op Operator) {
 		return OperatorRe
 	case tokenGlob:
 		return OperatorGlob
+	case tokenBetween:
+		return OperatorBetween
 	default:
 		t.errorf("illegal operator")
 		return
@@ -196,28 +238,7 @@ func (t *Tree) parseText() ValExpr {
 	return node
 }
 
-// errString indicates the string literal does no have the right syntax.
-// var errString = errors.New("invalid string literal")
-
 var (
 	quoteEscaped   = []byte("\\'")
 	quoteUnescaped = []byte("'")
 )
-
-// unquote interprets buf as a single-quoted literal, returning the
-// value that buf quotes.
-// func unquote(buf []byte) ([]byte, error) {
-// 	n := len(buf)
-// 	if n < 2 {
-// 		return nil, errString
-// 	}
-// 	quote := buf[0]
-// 	if quote != quoteUnescaped[0] {
-// 		return nil, errString
-// 	}
-// 	if quote != buf[n-1] {
-// 		return nil, errString
-// 	}
-// 	buf = buf[1 : n-1]
-// 	return bytes.Replace(buf, quoteEscaped, quoteUnescaped, -1), nil
-// }

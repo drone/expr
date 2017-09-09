@@ -61,6 +61,38 @@ func TestParse(t *testing.T) {
 			},
 		},
 		{
+			query: "ram BETWEEN 4 AND 8",
+			root: &AndExpr{
+				Left: &ComparisonExpr{
+					Operator: OperatorGte,
+					Left:     &Field{Name: []byte("ram")},
+					Right:    &BasicLit{Value: []byte("4")},
+				},
+				Right: &ComparisonExpr{
+					Operator: OperatorLte,
+					Left:     &Field{Name: []byte("ram")},
+					Right:    &BasicLit{Value: []byte("8")},
+				},
+			},
+		},
+		{
+			query: "ram NOT BETWEEN 4 AND 8",
+			root: &NotExpr{
+				&AndExpr{
+					Left: &ComparisonExpr{
+						Operator: OperatorGte,
+						Left:     &Field{Name: []byte("ram")},
+						Right:    &BasicLit{Value: []byte("4")},
+					},
+					Right: &ComparisonExpr{
+						Operator: OperatorLte,
+						Left:     &Field{Name: []byte("ram")},
+						Right:    &BasicLit{Value: []byte("8")},
+					},
+				},
+			},
+		},
+		{
 			query: "platform GLOB 'linux/*'",
 			root: &ComparisonExpr{
 				Operator: OperatorGlob,
@@ -68,7 +100,6 @@ func TestParse(t *testing.T) {
 				Right:    &BasicLit{Value: []byte("linux/*")},
 			},
 		},
-
 		{
 			query: "platform NOT GLOB 'linux/*'",
 			root: &ComparisonExpr{
@@ -202,6 +233,7 @@ func TestParseErrors(t *testing.T) {
 		{"platform IN 'linux/amd64'", "selector: parse error:12: unexpected token, expecting ("},
 		{"platform IN ('linux/amd64'", "selector: parse error:13: unexpected eof, expecting )"},
 		{"platform && 'linux/amd64'", "selector: parse error:9: illegal operator"},
+		{"ram between 2000 4000", "selector: parse error:17: unexpected token, expecting AND"},
 	}
 
 	for _, test := range tests {

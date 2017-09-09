@@ -167,6 +167,31 @@ var evalTests = []struct {
 		param: map[string]string{"platform": "windows/amd64"},
 		match: true,
 	},
+	{
+		query: "count BETWEEN 2 AND 4",
+		param: map[string]string{"count": "5"},
+		match: false,
+	},
+	{
+		query: "count BETWEEN 2 AND 4",
+		param: map[string]string{"count": "1"},
+		match: false,
+	},
+	{
+		query: "count BETWEEN 2 AND 4",
+		param: map[string]string{"count": "2"},
+		match: true,
+	},
+	{
+		query: "count BETWEEN 2 AND 4",
+		param: map[string]string{"count": "4"},
+		match: true,
+	},
+	{
+		query: "count NOT BETWEEN 2 AND 4",
+		param: map[string]string{"count": "4"},
+		match: false,
+	},
 }
 
 func TestEval(t *testing.T) {

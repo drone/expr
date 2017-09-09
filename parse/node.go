@@ -81,6 +81,8 @@ const (
 	OperatorNotIn
 	OperatorNotRe
 	OperatorNotGlob
+	OperatorBetween
+	OperatorNotBetween
 )
 
 // Literal identifies the type of literal.

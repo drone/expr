@@ -38,6 +38,7 @@ const (
 	tokenIn
 	tokenGlob
 	tokenRegexp
+	tokenBetween
 	tokenTrue
 	tokenFalse
 )
@@ -146,6 +147,8 @@ func (l *lexer) scanIdent() token {
 		return tokenGlob
 	case "REGEXP", "regexp":
 		return tokenRegexp
+	case "BETWEEN", "between":
+		return tokenBetween
 	case "TRUE", "true":
 		return tokenTrue
 	case "FALSE", "false":
